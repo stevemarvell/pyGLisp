@@ -27,13 +27,16 @@ def generate_random_expression(depth):
             return [op, generate_random_expression(depth - 1), generate_random_expression(depth - 1)]
 
 
+class DivisionByZeroError(Exception):
+    pass
+
 def evaluate_expression(expression, inputs, depth=0):
     if depth > MAX_DEPTH:
         print("Maximum depth exceeded")
         return 0  # Return 0 if maximum depth is exceeded @todo handle this better
 
     if isinstance(expression, str):
-        return expression
+        return int(inputs[expression])
     elif isinstance(expression, int):
         return expression
     else:
@@ -47,19 +50,16 @@ def evaluate_expression(expression, inputs, depth=0):
         elif op == '*':
             return left_operand * right_operand
         elif op == '/':
-            if right_operand == 0:
-                return None
             return left_operand / right_operand
-
 
 def fitness(expression):
     # @todo reward shorter
     total_score = 0
     for input_set, output in zip(INPUTS, OUTPUTS):
-        result = evaluate_expression(expression, input_set)
-        if result is not None:
+        try:
+            result = evaluate_expression(expression, input_set)
             total_score += abs(result - output)
-        else:
+        except ZeroDivisionError:
             total_score += 1000  # Penalize divisions by zero heavily
     return total_score
 
